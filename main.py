@@ -33,3 +33,23 @@ custom_config = r'--psm 6'
 extracted_text = pytesseract.image_to_string(high_res_image, config=custom_config)
 
 print(extracted_text)
+
+# Get the type of the report
+
+# {type:keywords} 
+types = {'blood sugar' : ['blood sugar'], 'full blood count' : ['full blood count', 'complete blood count']}
+type = ''
+
+for key, value in types.items():
+    pattern = '|'.join(value)
+
+    match = re.search(pattern, extracted_text, re.IGNORECASE)
+    if match:
+        if match.group().lower() in value:
+            type = key
+            break
+
+if type == '':
+    print("Type does not found. Or type does not support.")
+
+print('Type is: ' + type)
