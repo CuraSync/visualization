@@ -53,3 +53,25 @@ if type == '':
     print("Type does not found. Or type does not support.")
 
 print('Type is: ' + type)
+
+# Get the values based on the types
+data = {}
+if type == 'full blood count':
+    data['platelet count'] = (['platelet count'], 0)
+    data['white cell count'] = (['white cell count'], 0)
+
+
+for key, value in data.items():
+    pattern = '|'.join(value[0])
+
+    match = re.search(pattern, extracted_text, re.IGNORECASE)
+    if match:
+        start = match.end()+1
+        end = start
+        while end < len(extracted_text) and not extracted_text[end].isspace():
+            end += 1
+        extracted_value = extracted_text[start:end].strip()
+        data[key] = (value[0], extracted_value)
+
+
+print(data)
