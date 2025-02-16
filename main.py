@@ -88,3 +88,73 @@ for key,value in data.items():
     data_final['data'][key] = {'value': value[1]}
 
 print(data_final)
+
+
+# Add normal values to the data structre
+normal_data = {
+    'full blood count': {
+        'platelet count': {
+            'world average': 300,
+            'sri lankan average': 305,
+            'male average': 310,
+            'female average': 302,
+            '20 lower average': 290,
+            '40 lower average': 295,
+            '60 lower average': 280,
+            '80 lower average': 298
+        },
+        'white cell count': {
+            'world average': 300,
+            'sri lankan average': 305,
+            'male average': 310,
+            'female average': 302,
+            '20 lower average': 290,
+            '40 lower average': 295,
+            '60 lower average': 280,
+            '80 lower average': 298
+        }
+    },
+    'blood sugar': {
+        'fasting': {
+            'world average': 90,
+            'sri lankan average': 92,
+            'male average': 94,
+            'female average': 91,
+            '20 lower average': 85,
+            '40 lower average': 88,
+            '60 lower average': 87,
+            '80 lower average': 89
+        },
+        'postprandial': {
+            'world average': 120,
+            'sri lankan average': 122,
+            'male average': 124,
+            'female average': 121,
+            '20 lower average': 115,
+            '40 lower average': 118,
+            '60 lower average': 117,
+            '80 lower average': 119
+        }
+    }
+}
+
+if data_final['type'] in normal_data:
+    for key in data_final['data']:
+        data_final['data'][key]['world average'] = normal_data[data_final['type']][key]['world average']
+        data_final['data'][key]['sri lankan average'] = normal_data[data_final['type']][key]['sri lankan average']
+        
+        if data_final['gender'] == 'male':
+            data_final['data'][key]['male average'] = normal_data[data_final['type']][key]['male average']
+        elif data_final['gender'] == 'female':
+            data_final['data'][key]['female average'] = normal_data[data_final['type']][key]['female average']
+        
+        if data_final['age'] < 20:
+            data_final['data'][key]['20 lower average'] = normal_data[data_final['type']][key]['20 lower average']
+        elif data_final['age'] < 40:
+            data_final['data'][key]['40 lower average'] = normal_data[data_final['type']][key]['40 lower average']
+        elif data_final['age'] < 40:
+            data_final['data'][key]['60 lower average'] = normal_data[data_final['type']][key]['60 lower average']
+        elif data_final['age'] < 40:
+            data_final['data'][key]['80 lower average'] = normal_data[data_final['type']][key]['80 lower average']
+
+print(data_final)
