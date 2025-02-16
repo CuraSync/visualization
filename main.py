@@ -75,3 +75,16 @@ for key, value in data.items():
 
 
 print(data)
+
+
+# make the final data structre 
+data_final = {}
+data_final['type'] = type
+data_final['gender'] = 'male'
+data_final['age'] = 24
+data_final['data'] = {}
+
+for key,value in data.items():
+    data_final['data'][key] = {'value': value[1]}
+
+print(data_final)
