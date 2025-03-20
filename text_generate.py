@@ -1,7 +1,10 @@
 import google.generativeai as genai
+from dotenv import load_dotenv
 import os
 
-API_KEY = "AIzaSyDgYWRcmJNNbFL86gWTwkbA7rbxph2cXDw"
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
 genai.configure(api_key=API_KEY)
 
 def generate_explanation(input_text):
@@ -20,7 +23,7 @@ def generate_explanation(input_text):
             ],
             generation_config={
                 "temperature": 0.7,
-                "max_output_tokens": 800,
+                "max_output_tokens": 1000,
                 "top_p": 0.95
             }
         )
@@ -33,9 +36,7 @@ def generate_explanation(input_text):
 
 
 def save_to_file(text, filename):
-    """Save the explanation to a text file"""
     try:
-        # Get the current directory where the script is running
         current_dir = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(current_dir, filename)
         
@@ -47,7 +48,6 @@ def save_to_file(text, filename):
         return f"Error saving to file: {str(e)}"
     
 def clean_response(text):
-    # Remove the first two line 
     lines = text.split('\n', 2)
     if len(lines) > 1:
         text = lines[2]
