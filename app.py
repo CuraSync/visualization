@@ -4,6 +4,7 @@ from io import BytesIO
 import prepare_text as pt
 import text_generate as tg
 from flask_cors import CORS
+from prepare_text import TypeNotSupportError
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}) 
@@ -13,9 +14,18 @@ def process_image():
     try:
         data = request.get_json()
         image_url = data.get('image_url')
+
+        age = data.get('age')
+        gender = data.get('gender')
+
+        if not age or not (int(age) > 0 and int(age) < 110):
+            return jsonify({"error": "Age field is not available or invalid"}), 400     
+
+        if gender not in ['male', 'female']:
+            return jsonify({"error": "Gender field is not available or invalid"}), 400
         
         if not image_url:
-            return jsonify({"error": "No image URL provided"}), 400
+            return jsonify({"error": "No lab report image URL provided"}), 400
 
         response = requests.get(image_url)
         if response.status_code != 200:
@@ -24,7 +34,7 @@ def process_image():
         image_data = BytesIO(response.content)
         extracted_text = pt.extract_text(image_data)
 
-        processed_data = pt.process_report_data(extracted_text)
+        processed_data = pt.process_report_data(extracted_text, age, gender)
         final_data = pt.add_reference_data(processed_data)
 
         explanation = tg.generate_explanation(final_data)
@@ -39,6 +49,8 @@ def process_image():
             "explanation": cleaned_explanation
         }), 200
 
+    except TypeNotSupportError as e:
+        return jsonify({"error": str(e)}), 422
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -49,4 +61,4 @@ def health():
         }), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

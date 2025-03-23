@@ -1,33 +1,40 @@
 import pytesseract
 from PIL import Image, ImageFilter
 import re
+import data.normal_data as db_normal_data
+import data.types as db_types
+from data.type_fields import type_field_getter
 
+class TypeNotSupportError(Exception):
+    pass
 
 def extract_text(image_path):
 
     image = Image.open(image_path)
 
+    image = image.convert("RGB")
+
     # Increaase image resolution x4
-    scale_factor = 4
-    new_width = int(image.width * scale_factor)
-    new_height = int(image.height * scale_factor)
-    high_res_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    # scale_factor = 4
+    # new_width = int(image.width * scale_factor)
+    # new_height = int(image.height * scale_factor)
+    # high_res_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
     # Improve edges 
-    high_res_image = high_res_image.filter(ImageFilter.SHARPEN)
+    # high_res_image = high_res_image.filter(ImageFilter.SHARPEN)
 
     # Remove noise
-    high_res_image = high_res_image.filter(ImageFilter.MedianFilter(size=3))
+    # high_res_image = high_res_image.filter(ImageFilter.MedianFilter(size=3))
 
     # increasing text contrast
     # threshold = 128
     # high_res_image = high_res_image.point(lambda x: 255 if x > threshold else 0)
 
     # Convert to gray scale
-    high_res_image = high_res_image.convert("L")
+    high_res_image = image.convert("L")
 
     # Save the preprocessed image for debugging
-    high_res_image.save("12.png")
+    # high_res_image.save("12.png")
 
     custom_config = r'--psm 6'
 
@@ -38,9 +45,9 @@ def extract_text(image_path):
 
 # Get the type of the report
 
-def process_report_data(extracted_text):
+def process_report_data(extracted_text, age, gender):
     # {type:keywords} 
-    types = {'blood sugar' : ['blood sugar'], 'full blood count' : ['full blood count', 'complete blood count']}
+    types = db_types.types
     type = ''
 
     for key, value in types.items():
@@ -53,15 +60,12 @@ def process_report_data(extracted_text):
                 break
 
     if type == '':
-        print("Type does not found. Or type does not support.")
+        raise TypeNotSupportError("Type does not found. Or type does not support.")
 
-    print('Type is: ' + type)
+    # print('Type is: ' + type)
 
     # Get the values based on the types
-    data = {}
-    if type == 'full blood count':
-        data['platelet count'] = (['platelet count'], 0)
-        data['white cell count'] = (['white cell count'], 0)
+    data = type_field_getter(type)
 
 
     for key, value in data.items():
@@ -82,8 +86,8 @@ def process_report_data(extracted_text):
     # make the final data structre 
     data_final = {}
     data_final['type'] = type
-    data_final['gender'] = 'male'
-    data_final['age'] = 24
+    data_final['gender'] = gender
+    data_final['age'] = age
     data_final['data'] = {}
 
     for key,value in data.items():
@@ -93,57 +97,9 @@ def process_report_data(extracted_text):
     return data_final
 
 
-
-
-
 def add_reference_data(data_final):
     # Add normal values to the data structre
-    normal_data = {
-        'full blood count': {
-            'platelet count': {
-                'world average': 300,
-                'sri lankan average': 305,
-                'male average': 310,
-                'female average': 302,
-                '20 lower average': 290,
-                '40 lower average': 295,
-                '60 lower average': 280,
-                '80 lower average': 298
-            },
-            'white cell count': {
-                'world average': 300,
-                'sri lankan average': 305,
-                'male average': 310,
-                'female average': 302,
-                '20 lower average': 290,
-                '40 lower average': 295,
-                '60 lower average': 280,
-                '80 lower average': 298
-            }
-        },
-        'blood sugar': {
-            'fasting': {
-                'world average': 90,
-                'sri lankan average': 92,
-                'male average': 94,
-                'female average': 91,
-                '20 lower average': 85,
-                '40 lower average': 88,
-                '60 lower average': 87,
-                '80 lower average': 89
-            },
-            'postprandial': {
-                'world average': 120,
-                'sri lankan average': 122,
-                'male average': 124,
-                'female average': 121,
-                '20 lower average': 115,
-                '40 lower average': 118,
-                '60 lower average': 117,
-                '80 lower average': 119
-            }
-        }
-    }
+    normal_data = db_normal_data.normal_data
 
     if data_final['type'] in normal_data:
         for key in data_final['data']:
@@ -164,5 +120,5 @@ def add_reference_data(data_final):
             elif data_final['age'] < 40:
                 data_final['data'][key]['80 lower average'] = normal_data[data_final['type']][key]['80 lower average']
 
-    print(data_final)
+    # print(data_final)
     return data_final
