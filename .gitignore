@@ -2,3 +2,4 @@ CurasyncVisualization
 **/__pycache__/
 explanations
 images
+.env
